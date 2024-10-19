@@ -15,7 +15,7 @@ export default function Home() {
 				closing the app.
 			</Muted>
 			<Button
-				style={{ width: '100%' }}
+				style={{ width: "100%" }}
 				onPress={() => router.push("/(app)/modal")}
 			>
 				Open Modal

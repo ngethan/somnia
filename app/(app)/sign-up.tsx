@@ -59,8 +59,12 @@ export default function SignUp() {
 
 	async function onSubmit(data: z.infer<typeof formSchema>) {
 		try {
-			// Add sign-up logic that includes first and last name, if needed
-			await signUp(data.phoneNumber, data.password);
+			await signUp(
+				data.firstName,
+				data.lastName,
+				data.phoneNumber,
+				data.password,
+			);
 
 			form.reset();
 		} catch (error: Error | any) {

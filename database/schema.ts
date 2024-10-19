@@ -1,5 +1,3 @@
-import type { SQL } from "drizzle-orm";
-import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import { relations, sql } from "drizzle-orm";
 import {
 	boolean,
@@ -19,6 +17,14 @@ import {
 } from "drizzle-orm/pg-core";
 import { v4 as uuidv4 } from "uuid";
 
+export const sleepStage = pgEnum("SleepStage", [
+	"INBED",
+	"ASLEEP",
+	"DEEP",
+	"CORE",
+	"REM",
+]);
+
 export const users = pgTable(
 	"users",
 	{
@@ -26,7 +32,6 @@ export const users = pgTable(
 			.primaryKey()
 			.notNull()
 			.$defaultFn(() => uuidv4()),
-		username: text("username"),
 		firstName: text("firstName"),
 		lastName: text("lastName"),
 		fullName: text("fullName"),
@@ -35,12 +40,44 @@ export const users = pgTable(
 	(table) => {
 		return {
 			nameIdx: index("name_idx").on(table.fullName),
-			usernameIdx: index("username_idx").on(table.username),
 			phoneKey: uniqueIndex("users_phone_key").on(table.phoneNumber),
-			usernameKey: uniqueIndex("users_username_key").on(table.username),
 		};
 	},
 );
+
+export enum SleepStage {
+	"INBED",
+	"ASLEEP",
+	"DEEP",
+	"CORE",
+	"REM",
+}
+
+export type SleepCycle = {
+	stage: SleepStage;
+	startTime: Date;
+	endTime: Date;
+};
+
+export const sleepData = pgTable("sleep_data", {
+	id: uuid("id")
+		.primaryKey()
+		.notNull()
+		.$defaultFn(() => uuidv4()),
+	userId: uuid("userId")
+		.notNull()
+		.references(() => users.id, {
+			onDelete: "restrict",
+			onUpdate: "cascade",
+		}),
+	date: timestamp("date", { precision: 3, mode: "date" })
+		.defaultNow()
+		.notNull(),
+	sleepDuration: integer("sleepDuration").default(0).notNull(), // minutes
+	sleepCycle: jsonb().$type<SleepCycle[]>(),
+	sleepQuality: integer("sleepQuality").notNull(),
+	suggestions: text("suggestions").notNull(),
+});
 
 export const connections = pgTable(
 	"connections",
