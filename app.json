@@ -9,6 +9,7 @@
 		"userInterfaceStyle": "automatic",
 		"assetBundlePatterns": ["**/*"],
 		"ios": {
+			"bundleIdentifier": "dev.ethanng.somnia",
 			"supportsTablet": true,
 			"config": {
 				"usesNonExemptEncryption": false
