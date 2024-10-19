@@ -54,7 +54,16 @@
 					"origin": "https://ethanng.dev/"
 				}
 			],
-			"expo-secure-store"
+			"expo-secure-store",
+			[
+				"react-native-health",
+				{
+					"isClinicalDataEnabled": true,
+					"healthSharePermission": "Custom health share permission",
+					"healthUpdatePermission": "Custom health update permission",
+					"healthClinicalDescription": "Custom health share permission for clinical data"
+				}
+			]
 		],
 		"extra": {
 			"router": {
