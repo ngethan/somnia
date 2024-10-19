@@ -11,7 +11,7 @@ import { H1 } from "@/components/ui/typography";
 import { useSupabase } from "@/context/supabase-provider";
 
 // Import the logo
-const logo = require("../(app)/somnialogo.png"); // Adjust the path accordingly
+const logo = require("../../assets/icon.png"); // Adjust the path accordingly
 
 // Define form validation schema
 const formSchema = z

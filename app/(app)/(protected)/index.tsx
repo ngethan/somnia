@@ -1,9 +1,23 @@
-import { View } from "react-native";
 import { Button, Text } from "@ui-kitten/components";
-import { H1, Muted } from "@/components/ui/typography";
 import { router } from "expo-router";
+import { View } from "react-native";
+
+import { H1, Muted } from "@/components/ui/typography";
+import useHealthData from "@/hooks/useHealthData";
 
 export default function Home() {
+	const today = new Date();
+	const { sleepData, restingHeartRateSamples, respiratoryRateSamples } =
+		useHealthData({
+			startDate: new Date(today.setMonth(today.getMonth() - 1)).toString(),
+			endDate: today.toString(),
+			includeManuallyAdded: false,
+		});
+
+	console.log(sleepData, "sleep data");
+	console.log(restingHeartRateSamples, "resting heart rate samples");
+	console.log(respiratoryRateSamples, "respiratory rate samples");
+
 	return (
 		<View className="flex-1 items-center justify-center bg-background p-4 gap-y-4">
 			<H1 className="text-center">Welcome to Somnia!</H1>
