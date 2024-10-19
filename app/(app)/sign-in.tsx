@@ -11,7 +11,7 @@ import { H1 } from "@/components/ui/typography";
 import { useSupabase } from "@/context/supabase-provider";
 
 const formSchema = z.object({
-	email: z.string().email("Please enter a valid email address."),
+	phoneNumber: z.string(),
 	password: z
 		.string()
 		.min(8, "Please enter at least 8 characters.")
@@ -24,14 +24,14 @@ export default function SignIn() {
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
-			email: "",
+			phoneNumber: "",
 			password: "",
 		},
 	});
 
 	async function onSubmit(data: z.infer<typeof formSchema>) {
 		try {
-			await signInWithPassword(data.email, data.password);
+			await signInWithPassword(data.phoneNumber, data.password);
 
 			form.reset();
 		} catch (error: Error | any) {
@@ -47,15 +47,15 @@ export default function SignIn() {
 					<View className="gap-4">
 						<FormField
 							control={form.control}
-							name="email"
+							name="phoneNumber"
 							render={({ field }) => (
 								<FormInput
-									label="Email"
-									placeholder="Email"
+									label="Phone Number"
+									placeholder="Phone Number"
 									autoCapitalize="none"
-									autoComplete="email"
+									autoComplete="tel-national"
 									autoCorrect={false}
-									keyboardType="email-address"
+									keyboardType="phone-pad"
 									{...field}
 								/>
 							)}
