@@ -5,7 +5,7 @@ import { supabase } from "../../config/supabase";
 import { OpenAI } from "openai";
 
 const openai = new OpenAI({
-	apiKey: process.env.OPENAI_API_KEY,
+	apiKey: "youhguygf",
 });
 
 export async function getAISuggestions(

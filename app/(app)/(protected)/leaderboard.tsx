@@ -1,7 +1,10 @@
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import { Layout, Text, List, ListItem, Divider, Avatar, Card } from '@ui-kitten/components';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, ActivityIndicator } from 'react-native';
+import { Text, List, ListItem, Divider, Avatar, Card } from '@ui-kitten/components';
 import { SafeAreaView } from '@/components/safe-area-view';
+import { useSupabase } from '@/context/supabase-provider';
+import { supabase } from '@/config/supabase';
+import { SleepData, User } from "@/types/global";
 
 // Define the types for the leaderboard data
 interface LeaderboardItem {
@@ -10,17 +13,59 @@ interface LeaderboardItem {
   avatar: string;
 }
 
-// Example leaderboard data
-const leaderboardData: LeaderboardItem[] = [
-  { name: 'User1', score: 1200, avatar: 'https://your-avatar-url.com/user1.jpg' },
-  { name: 'User2', score: 1150, avatar: 'https://your-avatar-url.com/user2.jpg' },
-  { name: 'User3', score: 1100, avatar: 'https://your-avatar-url.com/user3.jpg' },
-  { name: 'User4', score: 1050, avatar: 'https://your-avatar-url.com/user4.jpg' },
-  { name: 'User5', score: 1000, avatar: 'https://your-avatar-url.com/user5.jpg' },
-  // Add more users as needed
-];
+type LeaderboardFetch = {
+  user: User;
+  sleepData: SleepData;
+}
 
 const Leaderboard: React.FC = () => {
+  const { session } = useSupabase();
+  const [leaderboardData, setLeaderboardData] = useState<LeaderboardItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch leaderboard data
+  useEffect(() => {
+    const fetchLeaderboardData = async () => {
+      if (session?.user) {
+        try {
+          const { data, error } = await supabase.from('sleep_data').select().order("sleepQuality", { nullsFirst: false, ascending: false }).limit(10).gte("date", new Date().toDateString());
+
+          if (error) {
+            setError('Error fetching leaderboard data');
+            setLoading(false);
+            return;
+          }
+
+          const leaderboardUsers: LeaderboardFetch[] = [];
+
+          await Promise.all(data.map(async (d: SleepData) => {
+            const { data: user } = await supabase.from("users").select().eq("id", d.userId).limit(1);
+            if (user?.[0]) leaderboardUsers.push({
+              user: user?.[0]!,
+              sleepData: d,
+            });
+          }))
+
+          console.log(leaderboardUsers);
+
+          setLeaderboardData(leaderboardUsers.map((d) => ({
+            name: d.user.fullName,
+            score: d.sleepData.sleepQuality,
+            avatar: "",
+          })).sort((a, b) => b.score - a.score) as LeaderboardItem[]);  // Ensure the data matches the type
+        } catch (fetchError) {
+          setError('Error fetching leaderboard data');
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchLeaderboardData();
+  }, [session?.user]);
+
+  // Render each leaderboard item
   const renderItem = ({ item, index }: { item: LeaderboardItem; index: number }) => (
     <ListItem
       title={`${index + 1}. ${item.name}`}  // Rank and name
@@ -31,23 +76,38 @@ const Leaderboard: React.FC = () => {
     />
   );
 
+  // Render loading or error states
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text status="danger">{error}</Text>
+      </View>
+    );
+  }
+
   return (
-        <SafeAreaView>
-            <View style={styles.headerContainer}>
-            <Text style={styles.headerText}>LeaderBoard</Text>
-
-            </View>
+    <SafeAreaView>
+      <View style={styles.headerContainer}>
+        <Text style={styles.headerText}>LeaderBoard</Text>
+      </View>
       <Card>
-
-      {/* Leaderboard List */}
-      <List
-        data={leaderboardData}
-        ItemSeparatorComponent={Divider}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.name}
-      />
+        {/* Leaderboard List */}
+        <List
+          data={leaderboardData}
+          ItemSeparatorComponent={Divider}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.name}
+        />
       </Card>
-      </SafeAreaView>
+    </SafeAreaView>
   );
 };
 
@@ -55,7 +115,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#f7f9fc',  // UI Kitten light background
+    backgroundColor: '#f7f9fc',
     marginTop: 12,
   },
   headerContainer: {
@@ -65,16 +125,15 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: 'bold',
   },
-  titleText: {
-    textAlign: 'center',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  card: {
+  loadingContainer: {
     flex: 1,
-    marginHorizontal: 5,
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 15,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

@@ -11,7 +11,7 @@ export default function AppLayout() {
 	return (
 		<SupabaseProvider>
 			<IconRegistry icons={EvaIconsPack} />
-			<ApplicationProvider {...eva} theme={eva.light}>
+			<ApplicationProvider {...eva} theme={eva.dark}>
 				<Slot />
 			</ApplicationProvider>
 		</SupabaseProvider>

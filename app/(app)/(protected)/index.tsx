@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback } from "react";
 import useHealthData from "@/hooks/useHealthData";
 import { Button, Card, Layout, Text } from "@ui-kitten/components";
-import { StyleSheet, View, ScrollView } from "react-native";
+import { StyleSheet, View } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useFocusEffect } from "expo-router";
 import { usePopulateSleepData } from "@/lib/database/populateSleepData";
+import { supabase } from "@/config/supabase";
 
 function generateWeekDates(): { date: Date; dayName: string }[] {
 	const today = new Date();
@@ -14,13 +15,7 @@ function generateWeekDates(): { date: Date; dayName: string }[] {
 	lastSunday.setDate(today.getDate() - dayOfWeek);
 
 	const daysOfWeek = [
-		"Sunday",
-		"Monday",
-		"Tuesday",
-		"Wednesday",
-		"Thursday",
-		"Friday",
-		"Saturday",
+		"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",
 	];
 	const dates = [];
 
@@ -36,17 +31,17 @@ function generateWeekDates(): { date: Date; dayName: string }[] {
 	return dates;
 }
 
-const Header = ({ greeting }: { greeting: string }): React.ReactElement => (
+const Header = ({ greeting, timeSlept }: { greeting: string, timeSlept: number }): React.ReactElement => (
 	<LinearGradient
-		colors={["#4B0082", "#800080", "#191970"]}
+		colors={["#4B0082", "#4B0082", "#191970"]}
 		style={styles.greetingCard}
 	>
 		<View style={styles.greetingContainer}>
 			<Text category="h1" style={styles.greetingText}>
-				{greeting} 🌙
+				{greeting} {greeting.includes("evening") ? "🌙" : "🌞"}
 			</Text>
 			<Text category="s1" style={styles.subGreetingText}>
-				You have slept 09:30, which is above your recommendation.
+				You have slept {timeSlept} hours, which is {Math.abs(8 - timeSlept) >= 1 ? "optimal!" : timeSlept < 7 ? "below your recommendation" : "above your recommendation"}
 			</Text>
 		</View>
 	</LinearGradient>
@@ -66,7 +61,7 @@ const Footer = (): React.ReactElement => (
 
 const AlarmHeader = (): React.ReactElement => (
 	<View>
-		<Text category="h6">Alarm Clock</Text>
+		<Text category="h6" style={styles.boldText}>Alarm Clock</Text>
 	</View>
 );
 
@@ -85,6 +80,16 @@ export default function Home() {
 	const [date, setDate] = useState(new Date());
 	const { sleepData } = useHealthData(date);
 	const { populateSleepData } = usePopulateSleepData();
+	const [timeSlept, setTimeSlept] = useState(0);
+
+	useEffect(() => {
+		const getTimeSlept = async () => {
+			const { data: sleepData, error: sleepError } = await supabase.from('sleep_data').select().limit(1).eq("date", new Date().toDateString());
+			if (sleepData?.[0]) setTimeSlept(Math.round((sleepData?.[0].sleepDuration )/ 60))
+		};
+
+		getTimeSlept();
+	}, [])
 
 	const handleDaySelection = (selectedDate: Date) => {
 		setDate(selectedDate);
@@ -141,56 +146,21 @@ export default function Home() {
 		<Layout style={styles.container}>
 			<Card
 				style={styles.card}
-				header={() => <Header greeting={greeting} />}
-				footer={Footer}
+				header={() => <Header greeting={greeting} timeSlept={timeSlept} />}
 			>
-				<Text category="p1">
-					You slept for {selectedStats.hours} hours on{" "}
-					{date.toLocaleDateString()}. Sleep quality: {selectedStats.quality}.
-				</Text>
+				
 			</Card>
-
-			<Card
-				style={styles.card}
-				header={() => <Text category="h6">Your Sleep Calendar</Text>}
-			>
-				<ScrollView horizontal showsHorizontalScrollIndicator={false}>
-					<View style={styles.calendarContainer}>
-						{last7Days.map(({ date: buttonDate, dayName }) => (
-							<View style={styles.dayContainer} key={dayName}>
-								<Text style={styles.dayAbbreviation}>
-									{dayName.substring(0, 3)}
-								</Text>
-								<Button
-									style={[
-										styles.dayButton,
-										date.toDateString() ===
-											new Date(buttonDate).toDateString() &&
-											styles.selectedDayButton,
-									]}
-									size="tiny"
-									onPress={() => handleDaySelection(buttonDate)}
-								>
-									{buttonDate.getDate()}
-								</Button>
-							</View>
-						))}
-					</View>
-				</ScrollView>
-			</Card>
-
 			<Card style={styles.card} header={AlarmHeader}>
-				<View style={styles.timePickerContainer}>
-					{showTimePicker && (
-						<DateTimePicker
-							value={alarmTime}
-							mode="time"
-							display="default"
-							onChange={onTimeChange}
-							is24Hour={false}
-						/>
-					)}
-				</View>
+			<View style={styles.timePickerContainer}>
+    <DateTimePicker
+        value={alarmTime}
+        mode="time"
+        display="spinner"
+        onChange={onTimeChange}
+        is24Hour={false}
+		textColor="#FFF"
+    />
+</View>
 
 				<View style={{ marginTop: 10 }}>
 					<Button onPress={confirmAlarm} style={styles.footerControl}>
@@ -200,8 +170,8 @@ export default function Home() {
 
 				{alarmSet && (
 					<Text category="p1" style={styles.alarmSetText}>
-						Alarm set for {alarmTime.toLocaleTimeString()}
-					</Text>
+					Alarm set for {alarmTime.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
+				  </Text>
 				)}
 			</Card>
 		</Layout>
@@ -210,69 +180,69 @@ export default function Home() {
 
 const styles = StyleSheet.create({
 	container: {
-		flex: 1,
-		justifyContent: "center",
-		padding: 16,
+	  backgroundColor: "#1C1C28", // Dark background
+	  flex: 1,
+	  padding: 16,
+	  justifyContent: "center",
 	},
 	card: {
-		margin: 16,
+	  borderColor: "#2F2F40", // Darker border to blend with the background
+	  backgroundColor: "#2F2F40", // Dark card background
+	  marginVertical: 10, // Add vertical margin for better spacing
+	  borderRadius: 12, // Rounded corners for the card
+	  padding: 20, // Padding inside the card
 	},
 	footerContainer: {
-		flexDirection: "row",
-		justifyContent: "flex-end",
+	  flexDirection: "row",
+	  justifyContent: "flex-end",
+	  paddingVertical: 10, // Padding for the footer to create space
 	},
 	footerControl: {
-		marginHorizontal: 4,
+	  marginHorizontal: 8,
+	  backgroundColor: "#4B0082", // Indigo background for the buttons
+	  borderColor: "#4B0082", // Consistent button border color
+	  borderRadius: 8, // Rounded button corners
 	},
 	alarmSetText: {
-		marginTop: 10,
-		color: "green",
-	},
-	calendarContainer: {
-		flexDirection: "row",
-		justifyContent: "space-between",
-	},
-	dayContainer: {
-		alignItems: "center",
-		marginHorizontal: 8,
-	},
-	dayAbbreviation: {
-		marginBottom: 4,
-		fontSize: 12,
-	},
-	dayButton: {
-		borderRadius: 25,
-		width: 40,
-		height: 40,
-		justifyContent: "center",
-		alignItems: "center",
-	},
-	selectedDayButton: {
-		backgroundColor: "#000000",
+	  marginTop: 10,
+	  color: "#32CD32", // Light green to indicate success
+	  fontWeight: "bold",
 	},
 	timePickerContainer: {
-		flexDirection: "row",
-		justifyContent: "center",
-		alignItems: "center",
+	  flexDirection: "row",
+	  justifyContent: "center",
+	  alignItems: "center",
+	  marginVertical: 20, // Add vertical space for better layout
 	},
 	greetingCard: {
-		borderRadius: 12,
-		padding: 20,
-		marginBottom: 20,
+	  borderRadius: 12,
+	  padding: 20,
+	  marginBottom: 20,
+	  shadowColor: "#000", // Add shadow for better card depth
+	  shadowOffset: { width: 0, height: 2 },
+	  shadowOpacity: 0.2,
+	  shadowRadius: 8,
 	},
 	greetingContainer: {
-		flexDirection: "column",
-		alignItems: "center",
+	  flexDirection: "column",
+	  alignItems: "center",
 	},
 	greetingText: {
-		color: "white",
-		fontWeight: "bold",
-		fontSize: 28,
+	  color: "white",
+	  fontWeight: "bold",
+	  fontSize: 28,
+	  textAlign: "center", // Align the text to the center
 	},
 	subGreetingText: {
-		color: "white",
-		marginTop: 8,
-		fontSize: 16,
-		textAlign: "center",
+	  color: "white",
+	  marginTop: 8,
+	  fontSize: 16,
+	  textAlign: "center",
+	  opacity: 0.8, // Lighter text for secondary information
 	},
-});
+	boldText: {
+	  color: "white",
+	  fontWeight: "bold",
+	  fontSize: 18, // Slightly larger bold text
+	},
+  });

@@ -9,7 +9,7 @@ interface SleepQuality {
   wakeUpTime: Date;
 }
 
-const SleepInfoCard = ({ sleepScore, bedTime, wakeUpTime }: { sleepScore: number, bedTime: Date, wakeUpTime: Date }) => (
+const SleepInfoCard = ({ sleepScore, bedTime, wakeUpTime }: { sleepScore?: number, bedTime?: Date, wakeUpTime?: Date }) => (
   <Card style={styles.card}>
     <View style={styles.cardContent}>
 
@@ -17,7 +17,7 @@ const SleepInfoCard = ({ sleepScore, bedTime, wakeUpTime }: { sleepScore: number
       <AnimatedCircularProgress
         size={120}
         width={12}
-        fill={sleepScore} // Use the sleepScore prop to fill the circle
+        fill={sleepScore ?? 0} // Use the sleepScore prop to fill the circle
         tintColor="#8A2BE2"
         backgroundColor="#F0F0F0"
         duration={800}
@@ -35,13 +35,22 @@ const SleepInfoCard = ({ sleepScore, bedTime, wakeUpTime }: { sleepScore: number
 
       {/* Sleep Details */}
       <View style={styles.sleepDetails}>
-        <Text category="label" style={styles.smallHeading}>Time Slept</Text>
-        <Text>{bedTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {wakeUpTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
+        <Text style={styles.smallHeading}>Time Slept</Text>
+        <Text style={styles.boldText}>{bedTime instanceof Date ? bedTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ""} - {wakeUpTime instanceof Date ? wakeUpTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ""}</Text>
 
         <Divider style={styles.innerDivider} />
 
-        <Text category="label" style={styles.smallHeading}>Quality of Sleep</Text>
-        <Text>Good</Text>
+        <Text style={styles.smallHeading}>Quality of Sleep</Text>
+        <Text style={styles.boldText}>{!sleepScore ? "" : sleepScore < 20
+  ? "Terrible"
+  : sleepScore < 40
+  ? "Bad"
+  : sleepScore < 60
+  ? "Okay"
+  : sleepScore < 80
+  ? "Good"
+  : "Terrific"}
+</Text>
       </View>
 
     </View>
@@ -50,6 +59,8 @@ const SleepInfoCard = ({ sleepScore, bedTime, wakeUpTime }: { sleepScore: number
 
 const styles = StyleSheet.create({
   cardContent: {
+    padding: 4,
+    backgroundColor: '#2B2B38',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -66,25 +77,35 @@ const styles = StyleSheet.create({
   smallHeading: {
     marginBottom: 5,
     fontSize: 12,
+    color: '#B3B3BD',
+    
   },
   boldText: {
     fontWeight: 'bold',
     marginBottom: 10,
+    color:'#FFF'
   },
   innerDivider: {
     marginVertical: 10,
   },
   scoreText: {
+    color: '#FFF',
     fontSize: 24,
     fontWeight: 'bold',
   },
   labelText: {
     fontSize: 14,
-    color: '#666',
+    color: '#B3B3BD',
   },
   card: {
-    margin: 10,
+    backgroundColor:'#2B2B38',
+    flex: 1,
+    marginHorizontal: 5,
+    alignItems: 'center',
+    paddingVertical: 8,
+    marginVertical: 8,
     borderRadius: 8,
+    borderColor: '#2B2B38',
   },
 });
 

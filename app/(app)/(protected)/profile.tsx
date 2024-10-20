@@ -1,11 +1,8 @@
-//sleep score, bedTime, and wakeUp time need to be passed to this page
-
-import React from "react";
-import { View, ScrollView, StyleSheet } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, ScrollView, StyleSheet, Dimensions } from "react-native";
 import {
 	Layout,
 	Text,
-	Avatar,
 	Button,
 	Divider,
 	Card,
@@ -13,11 +10,11 @@ import {
 	IconProps,
 } from "@ui-kitten/components";
 import { LineChart } from "react-native-chart-kit";
-import { Dimensions } from "react-native";
-import { AnimatedCircularProgress } from "react-native-circular-progress";
+import { router } from "expo-router";
 import SleepInfoCard from "@/components/sleepInfoCard";
 import SuggestionCard from "@/components/suggestionCard";
 import SleepCalendar from "@/components/sleepCalendar";
+import { supabase } from "@/config/supabase";
 
 // Define types for the sleep data
 interface SleepQuality {
@@ -26,276 +23,324 @@ interface SleepQuality {
 	wakeUpTime: Date;
 }
 
-const sleepQualityData: SleepQuality = {
-	sleepScore: 45,
-	bedTime: new Date(2024, 9, 19, 22, 30),
-	wakeUpTime: new Date(2024, 9, 20, 6, 30),
-};
+const Header = ({ greeting }: { greeting: string }): React.ReactElement => (
+	<View style={styles.greetingContainer}>
+		<Text category="h1" style={styles.greetingText}>
+			{greeting} 🌙
+		</Text>
+		<Text category="s1" style={styles.subGreetingText}>
+			You have slept 09:30, which is above your recommendation.
+		</Text>
+	</View>
+);
 
-const generateLast7Days = () => {
+const generateWeekDates = (): { date: Date; dayName: string }[] => {
 	const today = new Date();
-	const days = [];
+	const dayOfWeek = today.getDay();
+	const lastSunday = new Date(today);
+	lastSunday.setDate(today.getDate() - dayOfWeek);
 
-	for (let i = 6; i >= 0; i--) {
-		const day = new Date();
-		day.setDate(today.getDate() - i);
-		days.push({
-			date: day.getDate(), // Numeric date
-			dayAbbreviation: day.toLocaleString('en-US', { weekday: 'short' }), // Abbreviation of day (e.g., Mon, Tue)
-			dayName: day.toLocaleString('en-US', { weekday: 'long' }), // Full day name (e.g., Monday)
+	const daysOfWeek = [
+		"Sunday",
+		"Monday",
+		"Tuesday",
+		"Wednesday",
+		"Thursday",
+		"Friday",
+		"Saturday",
+	];
+	const dates = [];
+
+	for (let i = 0; i < 7; i++) {
+		const currentDate = new Date(lastSunday);
+		currentDate.setDate(lastSunday.getDate() + i);
+		dates.push({
+			date: currentDate,
+			dayName: daysOfWeek[currentDate.getDay()],
 		});
 	}
-
-	return days;
+	return dates;
 };
 
+const last7Days = generateWeekDates();
 
+type Selected = {
+	hours: number;
+	quality: number;
+	suggestion: string;
+	bedTime?: Date;
+	wakeUpTime?: Date;
+}
 
 const ProfileScreen: React.FC = () => {
-	// Function to render the edit icon for the Edit Profile button
-	const renderEditIcon = (props: IconProps) => (
-		<Icon {...props} name="edit-outline" />
+	const [date, setDate] = useState(new Date());
+	const [selectedStats, setSelectedStats] = useState<Selected>({
+		hours: 0,
+		quality: 0,
+		suggestion: "",
+		bedTime: undefined,
+		wakeUpTime: undefined,
+	});
+
+	useEffect(() => {
+		const fetchTodayStats = async () => {
+			const { data: sleepData, error: sleepError } = await supabase.from('sleep_data').select().limit(1).eq("date", new Date().toDateString());
+			
+			if (sleepError) console.log(sleepError);
+			else if (sleepData?.[0]) {
+				const len = sleepData?.[0]!.sleepCycle.length;
+				setSelectedStats({
+					hours: Math.round(sleepData?.[0]!.sleepDuration / 60),
+					quality: sleepData?.[0!].sleepQuality,
+					suggestion: sleepData?.[0]!.suggestion,
+					bedTime: len > 0 ? sleepData?.[0]!.sleepCycle?.[0]?.startTime as Date : new Date(),
+					wakeUpTime: len > 0 ? sleepData?.[0]!.sleepCycle?.[len]?.endTime as Date : new Date(),
+				})
+			}
+		}
+		
+		fetchTodayStats();
+	}, [])
+
+	const handleDaySelection = async (selectedDate: Date) => {
+		setDate(selectedDate);
+		setSelectedStats({ hours: 0, quality: 0, suggestion: "None", bedTime: undefined, wakeUpTime: undefined, });
+		
+		const { data: sleepData, error: sleepError } = await supabase.from('sleep_data').select().limit(1).eq("date", new Date().toDateString());
+		if (sleepError) console.log(sleepError);
+		else if (sleepData?.[0]) {
+			const len = sleepData?.[0]!.sleepCycle.length;
+			setSelectedStats({
+				hours: Math.round(sleepData?.[0]!.sleepDuration / 60),
+				quality: sleepData?.[0!].sleepQuality,
+				suggestion: sleepData?.[0]!.suggestion,
+				bedTime: len > 0 ? sleepData?.[0]!.sleepCycle?.[0]?.startTime as Date : new Date(),
+				wakeUpTime: len > 0 ? sleepData?.[0]!.sleepCycle?.[len]?.endTime as Date : new Date(),
+			})
+		}
+	};
+
+	const Footer = (): React.ReactElement => (
+		<View style={styles.footerContainer}>
+			<Button
+				style={styles.footerControl}
+				size="small"
+				onPress={() => router.push("/(app)/modal")}
+			>
+				Stats
+			</Button>
+		</View>
 	);
 
-	// Simulated sleep data
+	const yLabels = ["time", "awake", "REM", "n-Rem", "light"];
+const data = {
+  labels: ["1am", "2am", "3am", "4am", "5am"],
+  datasets: [
+    {
+      // Map the string values to numbers
+      data: [5, 4, 3, 2, 5],
+      strokeWidth: 2, // Optional
+    },
+  ],
+};
 
-	const data = {
-		labels: [
-			"",
-			"Monday",
-			"Tuesday",
-			"Wednesday",
-			"Thursday",
-			"Friday",
-			"Saturday",
-		],
-		datasets: [
-			{
-				data: [5, 7, 6, 7, 8, 8],
-				color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`, // optional
-				strokeWidth: 2, // optional
-			},
-		],
-	};
 
 	const screenWidth = Dimensions.get("window").width;
 
 	const chartConfig = {
-		backgroundGradientFrom: "#FFFFFF",
+		backgroundGradientFrom: "#1C1C28",
 		backgroundGradientFromOpacity: 1,
-		backgroundGradientTo: "#FFFFFF",
+		backgroundGradientTo: "#1C1C28",
 		backgroundGradientToOpacity: 1,
 		color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-		strokeWidth: 2, // optional, default 3
+		labelColor: (opacity = 1) => `rgba(231, 231, 231, ${opacity})`,
+		strokeWidth: 2,
 		barPercentage: 0.5,
-		useShadowColorFromDataset: false, // optional
-	};
+	  };
+	  
 
 	return (
 		<ScrollView style={styles.container}>
-			{/* Header with Avatar and User Info */}
 			<Layout style={styles.header} level="1">
-				<Avatar
-					size="giant"
-					source={{ uri: "https://your-avatar-url.com/avatar.jpg" }}
-					style={styles.avatar}
-				/>
-				<Text category="h5" style={styles.nameText}>
-					John Doe
+			<Card style={styles.card}>
+				<Text category="p1" style={styles.greetingText}>
+					You slept for {selectedStats.hours} hours on{" "}
+					{date.toLocaleDateString()}. Sleep quality: {selectedStats.quality}.
 				</Text>
-				<Text appearance="hint" style={styles.emailText}>
-					johndoe@gmail.com
-				</Text>
-				<View style={{ flex: 1 }}></View>
+			</Card>
+
+				<ScrollView horizontal showsHorizontalScrollIndicator={false}>
+					<View style={styles.calendarContainer}>
+						{last7Days.map(({ date: buttonDate, dayName }) => (
+							<View style={styles.dayContainer} key={dayName}>
+								<Text style={styles.dayAbbreviation}>
+									{dayName.substring(0, 3)}
+								</Text>
+								<Button
+									style={[
+										styles.dayButton,
+										date.toDateString() ===
+											new Date(buttonDate).toDateString() &&
+											styles.selectedDayButton,
+									]}
+									size="tiny"
+									onPress={() => handleDaySelection(buttonDate)}
+								>
+									{buttonDate.getDate()}
+								</Button>
+							</View>
+						))}
+					</View>
+				</ScrollView>
 			</Layout>
 
 			<Divider />
 
-			{/* Sleep Stats */}
 			<Layout style={styles.statsContainer}>
 				<Text category="h6" style={styles.sectionTitle}>
 					Sleep quality
 				</Text>
-
-
-				<View style={styles.cardsContainer}>
-                {/* sleep calendar*/}
-				</View>
-
 				<View style={styles.cardsContainer}>
 					<SleepInfoCard
-						sleepScore={45}
-						bedTime={sleepQualityData.bedTime}
-						wakeUpTime={sleepQualityData.wakeUpTime}
+						sleepScore={selectedStats.quality}
+						bedTime={selectedStats.bedTime}
+						wakeUpTime={selectedStats.wakeUpTime}
 					/>
 				</View>
 
+				<Text category="h6" style={styles.sectionTitle}>
+					Sleep Suggestions
+				</Text>
 				<View style={styles.cardsContainer}>
-					<SuggestionCard sleepScore={45} />
+					<SuggestionCard sleepScore={selectedStats.quality} suggestion={selectedStats.suggestion} />
 				</View>
 			</Layout>
 
 			<Divider />
-
-			{/* Sleep Goal */}
 
 			<Layout style={styles.goalContainer}>
 				<Text category="h6" style={styles.sectionTitle}>
 					My Sleep Data
 				</Text>
-				<View>
-					<LineChart
-						withInnerLines={false}
-						withVerticalLines={false}
-						data={data}
-						width={screenWidth}
-						height={256}
-						verticalLabelRotation={30}
-						chartConfig={chartConfig}
-						bezier
-					/>
+				<View style={styles.chart}>
+				<LineChart
+      data={data}
+      width={screenWidth}
+      height={256}
+      verticalLabelRotation={30}
+      chartConfig={chartConfig}
+      bezier
+      // Custom y-axis label function
+      yAxisLabel={""}
+      yAxisSuffix={""}
+      formatYLabel={(value) => yLabels[parseInt(value) - 1]} // Mapping numeric values back to strings
+      withInnerLines={false}
+      withVerticalLines={false}
+    />
 				</View>
 			</Layout>
 		</ScrollView>
 	);
 };
 
-// Define the styles for the profile screen
+// Cleaned styles
 const styles = StyleSheet.create({
 	container: {
+		backgroundColor: "#1C1C28",
 		padding: 16,
 		flex: 1,
 	},
 	header: {
+		backgroundColor: "#1C1C28",
 		padding: 20,
 		alignItems: "center",
 		justifyContent: "center",
 	},
-	avatar: {
-		marginBottom: 15,
-	},
-	nameText: {
-		marginBottom: 5,
-	},
-	emailText: {
-		marginBottom: 15,
-	},
-	editButton: {
-		marginTop: 10,
-	},
 	statsContainer: {
+		backgroundColor: "#1C1C28",
 		padding: 20,
 	},
 	sectionTitle: {
-		marginBottom: 15,
+		color: "#FFF",
+		marginVertical: 15,
+		marginTop: 30,
 	},
 	cardsContainer: {
+		backgroundColor: "#1C1C28",
 		flexDirection: "row",
 		justifyContent: "space-between",
+		borderRadius: 16,
 	},
 	card: {
+		borderColor: "#1C1C28",
+		backgroundColor: "#1C1C28",
 		flex: 1,
 		marginHorizontal: 5,
 		alignItems: "center",
 		paddingVertical: 15,
-	},
-	suggestionCard: {
-		flex: 1,
-		marginHorizontal: 5,
-		alignItems: "center",
-		paddingVertical: 15,
-		marginVertical: 15,
-	},
-	cardTitle: {
-		marginBottom: 5,
 	},
 	goalContainer: {
+		backgroundColor: "#1C1C28",
 		padding: 20,
 		alignItems: "center",
 	},
-	goalText: {
-		marginBottom: 10,
-	},
-	goalButton: {
-		marginTop: 10,
-	},
-	cardContent: {
-		flexDirection: "row", // Align graph and sleep details in a row
-		justifyContent: "space-between", // Space between the two sections
-		alignItems: "center", // Vertically align items
-	},
-	graphPlaceholder: {
-		width: "40%", // Adjust width for the graph
-		height: 100, // Set height for the placeholder
-		backgroundColor: "#E0E0E0", // Light gray background for the placeholder
-		justifyContent: "center",
-		alignItems: "center",
-		borderRadius: 8,
-	},
-	placeholderText: {
-		fontStyle: "italic",
-		color: "#888", // Light gray text for the placeholder
-	},
-	verticalDivider: {
-		width: 1, // Vertical divider width
-		height: "80%", // Set height for the divider
-		backgroundColor: "#C0C0C0", // Light gray color for the divider
-		marginHorizontal: 10, // Space between the graph and sleep details
-	},
-	sleepDetails: {
-		width: "55%", // Adjust width for the sleep details
-	},
-	smallHeading: {
-		marginBottom: 5, // Space under the heading
-		fontSize: 12,
-	},
-	boldText: {
-		fontWeight: "bold",
-		marginBottom: 10, // Space under the bold text
-	},
-	innerDivider: {
-		marginVertical: 10, // Space around the internal divider
-	},
-	generateText: {
-		fontSize: 12,
-		fontWeight: "bold",
-		alignSelf: "flex-end", // Align the text to the bottom right
-		marginTop: 12, // Push the "generate" text to the bottom
-		marginRight: 16,
-		color: "purple",
-	},
-	scoreText: {
-		fontSize: 24,
-		fontWeight: "bold",
-	},
-	labelText: {
-		fontSize: 14,
-		color: "#666",
+	chart: {
+		backgroundColor: "#1C1C28",
 	},
 	calendarContainer: {
+		backgroundColor: "#1C1C28",
 		flexDirection: "row",
-		justifyContent: "space-between", // Ensure even spacing across the screen
 	},
 	dayContainer: {
 		alignItems: "center",
-		width: "14%", // Ensure all 7 days fit on one row
-		marginHorizontal: 2, // Add a bit of space between circles
+		width: "14%",
+		marginHorizontal: 2,
 	},
 	dayAbbreviation: {
 		marginBottom: 4,
-		fontSize: 12, // Smaller font for abbreviations
-		color: "purple", // Make the abbreviation purple
+		fontSize: 12,
+		color: "#8A2BE2",
 	},
 	dayButton: {
-		borderRadius: 25, // Make button circular
-		width: 40, // Circle size for the day
-		height: 40,
-		justifyContent: "center",
-		alignItems: "center",
-		backgroundColor: "black", // Default white background for unselected day
+		backgroundColor: "#1C1C28",
+		borderColor: "#1C1C28"
 	},
 	selectedDayButton: {
-		backgroundColor: "purple", // Purple background for the selected day
+		fontWeight:"bold",
+		fontSize: 8,
+		alignItems: "center",
+		borderRadius: 25,
+		width: 40,
+		height: 40,
+		backgroundColor: "#8A2BE2",
+	},
+	footerContainer: {
+		flexDirection: "row",
+		justifyContent: "flex-end",
+	},
+	footerControl: {
+		marginHorizontal: 4,
+	},
+	greetingCard: {
+		backgroundColor: "#1C1C28",
+		borderRadius: 12,
+		padding: 20,
+		marginBottom: 20,
+	},
+	greetingContainer: {
+		flexDirection: "column",
+		alignItems: "center",
+	},
+	greetingText: {
+		color: "white",
+		fontWeight: "bold",
+		fontSize: 14,
+	},
+	subGreetingText: {
+		color: "white",
+		marginTop: 8,
+		fontSize: 16,
+		textAlign: "center",
 	},
 });
 
