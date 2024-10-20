@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Layout, Text, List, ListItem, Divider, Avatar, Card } from '@ui-kitten/components';
+import { SafeAreaView } from '@/components/safe-area-view';
 
 // Define the types for the leaderboard data
 interface LeaderboardItem {
@@ -31,6 +32,11 @@ const Leaderboard: React.FC = () => {
   );
 
   return (
+        <SafeAreaView>
+            <View style={styles.headerContainer}>
+            <Text style={styles.headerText}>LeaderBoard</Text>
+
+            </View>
       <Card>
 
       {/* Leaderboard List */}
@@ -41,6 +47,7 @@ const Leaderboard: React.FC = () => {
         keyExtractor={(item) => item.name}
       />
       </Card>
+      </SafeAreaView>
   );
 };
 
@@ -49,13 +56,19 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     backgroundColor: '#f7f9fc',  // UI Kitten light background
+    marginTop: 12,
   },
   headerContainer: {
-    marginBottom: 16,
+    marginBottom: 14,
   },
   headerText: {
     textAlign: 'center',
     fontWeight: 'bold',
+  },
+  titleText: {
+    textAlign: 'center',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
   card: {
     flex: 1,
