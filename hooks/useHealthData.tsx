@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Platform } from "react-native";
 import AppleHealthKit, {
 	HealthInputOptions,
@@ -17,7 +17,7 @@ const permissions: HealthKitPermissions = {
 	},
 };
 
-const useHealthData = (options: HealthInputOptions) => {
+const useHealthData = (date: Date) => {
 	const [hasPermissions, setHasPermission] = useState(false);
 	const [sleepData, setSleepData] = useState<HealthValue[]>([]);
 	const [restingHeartRateSamples, setRestingHeartRateSamples] = useState<
@@ -26,6 +26,26 @@ const useHealthData = (options: HealthInputOptions) => {
 	const [respiratoryRateSamples, setRespiratoryRateSamples] = useState<
 		HealthValue[]
 	>([]);
+
+	const startDate = useMemo(() => {
+		return new Date(
+			new Date().setMonth(new Date().getMonth() - 1),
+		).toISOString();
+	}, []);
+
+	const endDate = useMemo(() => {
+		return new Date().toISOString();
+	}, []);
+
+	const options: HealthInputOptions = useMemo(() => {
+		return {
+			startDate,
+			endDate,
+			limit: 100,
+			date: date.toISOString(),
+			includeManuallyAdded: false,
+		};
+	}, [startDate, endDate, date]);
 
 	useEffect(() => {
 		if (Platform.OS !== "ios") {

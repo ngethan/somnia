@@ -1,11 +1,12 @@
+import { useState } from "react";
 import { HealthValue } from "react-native-health";
 import { useSupabase } from "../../context/supabase-provider";
-import { useState } from "react";
 import { supabase } from "../../config/supabase";
 import { OpenAI } from "openai";
 
 const openai = new OpenAI({
-	apiKey: process.env.OPENAI_API_KEY,
+	apiKey:
+		"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",
 });
 
 export async function getAISuggestions(
@@ -91,7 +92,7 @@ export function usePopulateSleepData() {
 			};
 		}
 		const { data: lastRecord, error } = await supabase
-			.from("sleepData")
+			.from("sleep_data")
 			.select("endDate")
 			.order("endDate", { ascending: false })
 			.eq("userId", session.user.id)
