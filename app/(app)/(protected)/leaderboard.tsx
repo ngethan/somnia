@@ -97,15 +97,25 @@ const Leaderboard: React.FC = () => {
 		index: number;
 	}) => (
 		<ListItem
-			title={`${index + 1}. ${item.name}`} // Rank and name
-			description={`Score: ${item.score}`} // Display the score
+			title={`${index + 1}. ${item.name}`}
+			description={`Score: ${item.score}`}
 			accessoryLeft={() => (
-				<Avatar source={{ uri: item.avatar }} size="medium" /> // Avatar
+				<View style={{ flexDirection: "row", alignItems: "center" }}>
+					<View
+						style={{
+							width: 40,
+							height: 40,
+							borderRadius: 60,
+							backgroundColor: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
+							marginLeft: 8,
+						}}
+					/>
+					<Avatar source={{ uri: item.avatar }} size="medium" />
+				</View>
 			)}
 		/>
 	);
 
-	// Render loading or error states
 	if (loading) {
 		return (
 			<View style={styles.loadingContainer}>

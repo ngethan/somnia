@@ -1,21 +1,16 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { ActivityIndicator, View } from "react-native";
 import * as z from "zod";
 
 import { SafeAreaView } from "@/components/safe-area-view";
-import { Button } from "@/components/ui/button";
-import { Form, FormField, FormInput } from "@/components/ui/form";
-import { Text } from "@/components/ui/text";
-import { H1 } from "@/components/ui/typography";
 import { useSupabase } from "@/context/supabase-provider";
+import { Button, Layout, Input, Text } from "@ui-kitten/components";
 
+// Zod schema for form validation
 const formSchema = z.object({
-	phoneNumber: z.string(),
-	password: z
-		.string()
-		.min(8, "Please enter at least 8 characters.")
-		.max(64, "Please enter fewer than 64 characters."),
+	phoneNumber: z.string().min(1, "Phone Number is required."),
+	password: z.string().min(8, "Password must be at least 8 characters."),
 });
 
 export default function SignIn() {
@@ -32,7 +27,6 @@ export default function SignIn() {
 	async function onSubmit(data: z.infer<typeof formSchema>) {
 		try {
 			await signInWithPassword(data.phoneNumber, data.password);
-
 			form.reset();
 		} catch (error: Error | any) {
 			console.log(error.message);
@@ -40,56 +34,117 @@ export default function SignIn() {
 	}
 
 	return (
-		<SafeAreaView className="flex-1 bg-background p-4" edges={["bottom"]}>
-			<View className="flex-1 gap-4 web:m-4">
-				<H1 className="self-start ">Sign In</H1>
-				<Form {...form}>
-					<View className="gap-4">
-						<FormField
+		<SafeAreaView
+			style={{
+				flex: 1,
+				justifyContent: "center",
+				padding: 20,
+				backgroundColor: "#FAF5FF",
+			}}
+		>
+			<Layout style={{ alignItems: "center", backgroundColor: "transparent" }}>
+				<Text
+					category="h1"
+					style={{
+						marginBottom: 16,
+						color: "#8E44AD",
+						textAlign: "center",
+					}}
+				>
+					Sign In
+				</Text>
+
+				{/* Form Fields */}
+				<Layout style={{ width: "100%", backgroundColor: "transparent" }}>
+					{/* Phone Number Field */}
+					<View style={{ marginBottom: 16 }}>
+						<Controller
 							control={form.control}
 							name="phoneNumber"
-							render={({ field }) => (
-								<FormInput
-									label="Phone Number"
-									placeholder="Phone Number"
-									autoCapitalize="none"
-									autoComplete="tel-national"
-									autoCorrect={false}
-									keyboardType="phone-pad"
-									{...field}
-								/>
-							)}
-						/>
-						<FormField
-							control={form.control}
-							name="password"
-							render={({ field }) => (
-								<FormInput
-									label="Password"
-									placeholder="Password"
-									autoCapitalize="none"
-									autoCorrect={false}
-									secureTextEntry
-									{...field}
-								/>
+							render={({
+								field: { onChange, onBlur, value },
+								fieldState: { error },
+							}) => (
+								<>
+									<Input
+										label="Phone Number"
+										placeholder="Phone Number"
+										status={error ? "danger" : "primary"}
+										size="large"
+										value={value}
+										onBlur={onBlur}
+										onChangeText={onChange}
+										textStyle={{ color: "black" }} // Set text color to black
+										style={{
+											borderColor: error ? "red" : "#8E44AD",
+											backgroundColor: "transparent",
+										}}
+									/>
+									{error && (
+										<Text style={{ color: "red", marginTop: 4 }}>
+											{error.message}
+										</Text>
+									)}
+								</>
 							)}
 						/>
 					</View>
-				</Form>
-			</View>
-			<Button
-				size="default"
-				variant="default"
-				onPress={form.handleSubmit(onSubmit)}
-				disabled={form.formState.isSubmitting}
-				className="web:m-4"
-			>
-				{form.formState.isSubmitting ? (
-					<ActivityIndicator size="small" />
-				) : (
-					<Text>Sign In</Text>
-				)}
-			</Button>
+
+					{/* Password Field */}
+					<View style={{ marginBottom: 16 }}>
+						<Controller
+							control={form.control}
+							name="password"
+							render={({
+								field: { onChange, onBlur, value },
+								fieldState: { error },
+							}) => (
+								<>
+									<Input
+										label="Password"
+										placeholder="Password"
+										status={error ? "danger" : "primary"}
+										size="large"
+										secureTextEntry={true}
+										value={value}
+										onBlur={onBlur}
+										onChangeText={onChange}
+										textStyle={{ color: "black" }} // Set text color to black
+										style={{
+											borderColor: error ? "red" : "#8E44AD",
+											backgroundColor: "transparent",
+										}}
+									/>
+									{error && (
+										<Text style={{ color: "red", marginTop: 4 }}>
+											{error.message}
+										</Text>
+									)}
+								</>
+							)}
+						/>
+					</View>
+				</Layout>
+
+				{/* Sign-In Button */}
+				<Button
+					style={{
+						marginBottom: 16,
+						width: "100%",
+						backgroundColor: "#8E44AD",
+					}}
+					status="primary"
+					size="large"
+					onPress={form.handleSubmit(onSubmit)}
+					disabled={form.formState.isSubmitting}
+				>
+					{form.formState.isSubmitting ? (
+						<ActivityIndicator size="small" color="white" />
+					) : (
+						<Text>Sign In</Text>
+					)}
+				</Button>
+			</Layout>
 		</SafeAreaView>
 	);
 }

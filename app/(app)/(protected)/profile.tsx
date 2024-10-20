@@ -23,17 +23,6 @@ interface SleepQuality {
 	wakeUpTime: Date;
 }
 
-const Header = ({ greeting }: { greeting: string }): React.ReactElement => (
-	<View style={styles.greetingContainer}>
-		<Text category="h1" style={styles.greetingText}>
-			{greeting} 🌙
-		</Text>
-		<Text category="s1" style={styles.subGreetingText}>
-			You have slept 09:30, which is above your recommendation.
-		</Text>
-	</View>
-);
-
 const generateWeekDates = (): { date: Date; dayName: string }[] => {
 	const today = new Date();
 	const dayOfWeek = today.getDay();
@@ -70,7 +59,7 @@ type Selected = {
 	suggestion: string;
 	bedTime?: Date;
 	wakeUpTime?: Date;
-}
+};
 
 const ProfileScreen: React.FC = () => {
 	const [date, setDate] = useState(new Date());
@@ -84,8 +73,12 @@ const ProfileScreen: React.FC = () => {
 
 	useEffect(() => {
 		const fetchTodayStats = async () => {
-			const { data: sleepData, error: sleepError } = await supabase.from('sleep_data').select().limit(1).eq("date", new Date().toDateString());
-			
+			const { data: sleepData, error: sleepError } = await supabase
+				.from("sleep_data")
+				.select()
+				.limit(1)
+				.eq("date", new Date().toDateString());
+
 			if (sleepError) console.log(sleepError);
 			else if (sleepData?.[0]) {
 				const len = sleepData?.[0]!.sleepCycle.length;
@@ -93,20 +86,36 @@ const ProfileScreen: React.FC = () => {
 					hours: Math.round(sleepData?.[0]!.sleepDuration / 60),
 					quality: sleepData?.[0!].sleepQuality,
 					suggestion: sleepData?.[0]!.suggestion,
-					bedTime: len > 0 ? sleepData?.[0]!.sleepCycle?.[0]?.startTime as Date : new Date(),
-					wakeUpTime: len > 0 ? sleepData?.[0]!.sleepCycle?.[len]?.endTime as Date : new Date(),
-				})
+					bedTime:
+						len > 0
+							? (sleepData?.[0]!.sleepCycle?.[0]?.startTime as Date)
+							: new Date(),
+					wakeUpTime:
+						len > 0
+							? (sleepData?.[0]!.sleepCycle?.[len]?.endTime as Date)
+							: new Date(),
+				});
 			}
-		}
-		
+		};
+
 		fetchTodayStats();
-	}, [])
+	}, []);
 
 	const handleDaySelection = async (selectedDate: Date) => {
 		setDate(selectedDate);
-		setSelectedStats({ hours: 0, quality: 0, suggestion: "None", bedTime: undefined, wakeUpTime: undefined, });
-		
-		const { data: sleepData, error: sleepError } = await supabase.from('sleep_data').select().limit(1).eq("date", new Date().toDateString());
+		setSelectedStats({
+			hours: 0,
+			quality: 0,
+			suggestion: "None",
+			bedTime: undefined,
+			wakeUpTime: undefined,
+		});
+
+		const { data: sleepData, error: sleepError } = await supabase
+			.from("sleep_data")
+			.select()
+			.limit(1)
+			.eq("date", new Date().toDateString());
 		if (sleepError) console.log(sleepError);
 		else if (sleepData?.[0]) {
 			const len = sleepData?.[0]!.sleepCycle.length;
@@ -114,9 +123,15 @@ const ProfileScreen: React.FC = () => {
 				hours: Math.round(sleepData?.[0]!.sleepDuration / 60),
 				quality: sleepData?.[0!].sleepQuality,
 				suggestion: sleepData?.[0]!.suggestion,
-				bedTime: len > 0 ? sleepData?.[0]!.sleepCycle?.[0]?.startTime as Date : new Date(),
-				wakeUpTime: len > 0 ? sleepData?.[0]!.sleepCycle?.[len]?.endTime as Date : new Date(),
-			})
+				bedTime:
+					len > 0
+						? (sleepData?.[0]!.sleepCycle?.[0]?.startTime as Date)
+						: new Date(),
+				wakeUpTime:
+					len > 0
+						? (sleepData?.[0]!.sleepCycle?.[len]?.endTime as Date)
+						: new Date(),
+			});
 		}
 	};
 
@@ -133,17 +148,16 @@ const ProfileScreen: React.FC = () => {
 	);
 
 	const yLabels = ["time", "awake", "REM", "n-Rem", "light"];
-const data = {
-  labels: ["1am", "2am", "3am", "4am", "5am"],
-  datasets: [
-    {
-      // Map the string values to numbers
-      data: [5, 4, 3, 2, 5],
-      strokeWidth: 2, // Optional
-    },
-  ],
-};
-
+	const data = {
+		labels: ["1am", "2am", "3am", "4am", "5am"],
+		datasets: [
+			{
+				// Map the string values to numbers
+				data: [5, 4, 3, 2, 5],
+				strokeWidth: 2, // Optional
+			},
+		],
+	};
 
 	const screenWidth = Dimensions.get("window").width;
 
@@ -156,18 +170,17 @@ const data = {
 		labelColor: (opacity = 1) => `rgba(231, 231, 231, ${opacity})`,
 		strokeWidth: 2,
 		barPercentage: 0.5,
-	  };
-	  
+	};
 
 	return (
 		<ScrollView style={styles.container}>
 			<Layout style={styles.header} level="1">
-			<Card style={styles.card}>
-				<Text category="p1" style={styles.greetingText}>
-					You slept for {selectedStats.hours} hours on{" "}
-					{date.toLocaleDateString()}. Sleep quality: {selectedStats.quality}.
-				</Text>
-			</Card>
+				<Card style={styles.card}>
+					<Text category="p1" style={styles.greetingText}>
+						You slept for {selectedStats.hours} hours on{" "}
+						{date.toLocaleDateString()}. Sleep quality: {selectedStats.quality}.
+					</Text>
+				</Card>
 
 				<ScrollView horizontal showsHorizontalScrollIndicator={false}>
 					<View style={styles.calendarContainer}>
@@ -212,7 +225,10 @@ const data = {
 					Sleep Suggestions
 				</Text>
 				<View style={styles.cardsContainer}>
-					<SuggestionCard sleepScore={selectedStats.quality} suggestion={selectedStats.suggestion} />
+					<SuggestionCard
+						sleepScore={selectedStats.quality}
+						suggestion={selectedStats.suggestion}
+					/>
 				</View>
 			</Layout>
 
@@ -223,20 +239,20 @@ const data = {
 					My Sleep Data
 				</Text>
 				<View style={styles.chart}>
-				<LineChart
-      data={data}
-      width={screenWidth}
-      height={256}
-      verticalLabelRotation={30}
-      chartConfig={chartConfig}
-      bezier
-      // Custom y-axis label function
-      yAxisLabel={""}
-      yAxisSuffix={""}
-      formatYLabel={(value) => yLabels[parseInt(value) - 1]} // Mapping numeric values back to strings
-      withInnerLines={false}
-      withVerticalLines={false}
-    />
+					<LineChart
+						data={data}
+						width={screenWidth}
+						height={256}
+						verticalLabelRotation={30}
+						chartConfig={chartConfig}
+						bezier
+						// Custom y-axis label function
+						yAxisLabel={""}
+						yAxisSuffix={""}
+						formatYLabel={(value) => yLabels[parseInt(value) - 1]} // Mapping numeric values back to strings
+						withInnerLines={false}
+						withVerticalLines={false}
+					/>
 				</View>
 			</Layout>
 		</ScrollView>
@@ -303,10 +319,10 @@ const styles = StyleSheet.create({
 	},
 	dayButton: {
 		backgroundColor: "#1C1C28",
-		borderColor: "#1C1C28"
+		borderColor: "#1C1C28",
 	},
 	selectedDayButton: {
-		fontWeight:"bold",
+		fontWeight: "bold",
 		fontSize: 8,
 		alignItems: "center",
 		borderRadius: 25,
