@@ -4,92 +4,72 @@ import { ActivityIndicator, View } from "react-native";
 import * as z from "zod";
 
 import { SafeAreaView } from "@/components/safe-area-view";
-import { Button } from "@/components/ui/button";
 import { Form, FormField, FormInput } from "@/components/ui/form";
-import { Text } from "@/components/ui/text";
 import { H1 } from "@/components/ui/typography";
 import { useSupabase } from "@/context/supabase-provider";
+import { Button, Layout, Input, Text } from '@ui-kitten/components';
 
+// Zod schema for form validation
 const formSchema = z.object({
-	phoneNumber: z.string(),
-	password: z
-		.string()
-		.min(8, "Please enter at least 8 characters.")
-		.max(64, "Please enter fewer than 64 characters."),
+  phoneNumber: z.string().min(1, "Phone Number is required."),
+  password: z.string().min(8, "Password must be at least 8 characters."),
 });
 
 export default function SignIn() {
-	const { signInWithPassword } = useSupabase();
-
-	const form = useForm<z.infer<typeof formSchema>>({
-		resolver: zodResolver(formSchema),
-		defaultValues: {
-			phoneNumber: "",
-			password: "",
-		},
-	});
-
-	async function onSubmit(data: z.infer<typeof formSchema>) {
-		try {
-			await signInWithPassword(data.phoneNumber, data.password);
-
-			form.reset();
-		} catch (error: Error | any) {
-			console.log(error.message);
-		}
-	}
-
 	return (
-		<SafeAreaView className="flex-1 bg-background p-4" edges={["bottom"]}>
-			<View className="flex-1 gap-4 web:m-4">
-				<H1 className="self-start ">Sign In</H1>
-				<Form {...form}>
-					<View className="gap-4">
-						<FormField
-							control={form.control}
-							name="phoneNumber"
-							render={({ field }) => (
-								<FormInput
-									label="Phone Number"
-									placeholder="Phone Number"
-									autoCapitalize="none"
-									autoComplete="tel-national"
-									autoCorrect={false}
-									keyboardType="phone-pad"
-									{...field}
-								/>
-							)}
-						/>
-						<FormField
-							control={form.control}
-							name="password"
-							render={({ field }) => (
-								<FormInput
-									label="Password"
-									placeholder="Password"
-									autoCapitalize="none"
-									autoCorrect={false}
-									secureTextEntry
-									{...field}
-								/>
-							)}
-						/>
-					</View>
-				</Form>
-			</View>
-			<Button
-				size="default"
-				variant="default"
-				onPress={form.handleSubmit(onSubmit)}
-				disabled={form.formState.isSubmitting}
-				className="web:m-4"
-			>
-				{form.formState.isSubmitting ? (
-					<ActivityIndicator size="small" />
-				) : (
-					<Text>Sign In</Text>
-				)}
-			</Button>
+		<SafeAreaView style={{ flex: 1, justifyContent: 'center', padding: 20, backgroundColor: '#FAF5FF' }}>
+			<Layout style={{ alignItems: 'center', backgroundColor: 'transparent' }}>
+				<Text
+					category="h1"
+					style={{
+						marginBottom: 16,
+						color: '#8E44AD',
+						textAlign: 'center',
+					}}
+				>
+					Sign In
+				</Text>
+
+				{/* Form Fields */}
+				<Layout style={{ width: '100%', backgroundColor: 'transparent' }}>
+					<Input
+						label="Phone Number"
+						placeholder="Phone Number"
+						status="primary"
+						size="large"
+						style={{
+							marginBottom: 16,
+							borderColor: '#8E44AD', // Purple border
+							backgroundColor: 'transparent', // Transparent background
+						}}
+					/>
+					<Input
+						label="Password"
+						placeholder="Password"
+						status="primary"
+						size="large"
+						secureTextEntry={true}
+						style={{
+							marginBottom: 16,
+							borderColor: '#8E44AD', // Purple border
+							backgroundColor: 'transparent', // Transparent background
+						}}
+					/>
+				</Layout>
+
+				{/* Sign-In Button */}
+				<Button
+					style={{
+						marginBottom: 16,
+						width: '100%',
+						backgroundColor: '#8E44AD', // Purple background
+					}}
+					status="primary"
+					size="large"
+				>
+					Sign In
+				</Button>
+			</Layout>
 		</SafeAreaView>
 	);
 }
