@@ -18,7 +18,7 @@ export default function AppLayout() {
 				name="sign-up"
 				options={{
 					presentation: "modal",
-					headerShown: true,
+					headerShown: false,
 					headerTitle: "Sign Up",
 					headerStyle: {
 						backgroundColor:
@@ -36,7 +36,7 @@ export default function AppLayout() {
 				name="sign-in"
 				options={{
 					presentation: "modal",
-					headerShown: true,
+					headerShown: false,
 					headerTitle: "Sign In",
 					headerStyle: {
 						backgroundColor:
@@ -54,7 +54,7 @@ export default function AppLayout() {
 				name="modal"
 				options={{
 					presentation: "modal",
-					headerShown: true,
+					headerShown: false,
 					headerTitle: "Modal",
 					headerStyle: {
 						backgroundColor:
