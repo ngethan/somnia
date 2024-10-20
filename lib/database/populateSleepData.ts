@@ -1,11 +1,10 @@
-import { useState } from "react";
 import { HealthValue } from "react-native-health";
 import { useSupabase } from "../../context/supabase-provider";
-import { supabase } from "../../config/supabase";
 import { OpenAI } from "openai";
+import { supabase } from "../../config/supabase";
 
 const openai = new OpenAI({
-	apiKey: "youhguygf",
+	apiKey: "youhguygf" ?? "",
 });
 
 export async function getAISuggestions(
@@ -48,7 +47,7 @@ function mergeConsecutiveSleepEntries(data: HealthValue[]) {
 }
 
 function aggregateSleepMinutes(healthValues: HealthValue[]) {
-	const sleepStages = new Set(["ASLEEP", "DEEP", "CORE", "REM"]);
+	const sleepStages = new Set([0, 1, 2, 3]); // ["ASLEEP", "DEEP", "CORE", "REM"]
 
 	return healthValues
 		.filter((d) => sleepStages.has(d.value))
@@ -62,7 +61,7 @@ function aggregateSleepMinutes(healthValues: HealthValue[]) {
 }
 
 function aggregateWakeUps(healthValues: HealthValue[]) {
-	const sleepStages = new Set(["ASLEEP", "DEEP", "CORE", "REM"]);
+	const sleepStages = new Set([0, 1, 2, 3]); // ["ASLEEP", "DEEP", "CORE", "REM"]
 	let wakeUps = 0;
 	let wasAsleep = false;
 
@@ -71,7 +70,7 @@ function aggregateWakeUps(healthValues: HealthValue[]) {
 
 		if (sleepStages.has(currentValue)) {
 			wasAsleep = true;
-		} else if (currentValue === "INBED" && wasAsleep) {
+		} else if (currentValue === 4 && wasAsleep) {
 			wakeUps++;
 			wasAsleep = false;
 		}
