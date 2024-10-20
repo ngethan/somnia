@@ -61,6 +61,7 @@ const styles = StyleSheet.create({
 		backgroundColor: "black", // Default background for unselected day
 	},
 	selectedDayButton: {
+
 		backgroundColor: "purple", // Purple background for the selected day
 	},
 	card: {

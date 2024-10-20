@@ -25,28 +25,32 @@ const SuggestionCard: React.FC<SuggestionCardProps> = ({ sleepScore }) => (
 
 const styles = StyleSheet.create({
   suggestionCard: {
+    backgroundColor:'#2B2B38',
     flex: 1,
     marginHorizontal: 5,
     alignItems: 'center',
     paddingVertical: 15,
     marginVertical: 15,
     borderRadius: 8,
+    borderColor: '#2B2B38'
   },
   boldText: {
+    color: '#FFF',
     fontWeight: 'bold',
     marginBottom: 10, 
   },
   smallHeading: {
     fontSize: 12,
     marginBottom: 5,
+    color: '#B3B3BD',
   },
   generateText: {
+    color: '#8A2BE2',
     fontSize: 12,
     fontWeight: 'bold',
     alignSelf: 'flex-end', 
     marginTop: 12,
     marginRight: 16,
-    color: "purple",
   },
 });
 

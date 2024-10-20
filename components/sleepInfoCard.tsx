@@ -35,13 +35,13 @@ const SleepInfoCard = ({ sleepScore, bedTime, wakeUpTime }: { sleepScore: number
 
       {/* Sleep Details */}
       <View style={styles.sleepDetails}>
-        <Text category="label" style={styles.smallHeading}>Time Slept</Text>
-        <Text>{bedTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {wakeUpTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
+        <Text style={styles.smallHeading}>Time Slept</Text>
+        <Text style={styles.boldText}>{bedTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {wakeUpTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
 
         <Divider style={styles.innerDivider} />
 
-        <Text category="label" style={styles.smallHeading}>Quality of Sleep</Text>
-        <Text>Good</Text>
+        <Text style={styles.smallHeading}>Quality of Sleep</Text>
+        <Text style={styles.boldText}>Good</Text>
       </View>
 
     </View>
@@ -50,6 +50,8 @@ const SleepInfoCard = ({ sleepScore, bedTime, wakeUpTime }: { sleepScore: number
 
 const styles = StyleSheet.create({
   cardContent: {
+    padding: 4,
+    backgroundColor: '#2B2B38',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -66,25 +68,35 @@ const styles = StyleSheet.create({
   smallHeading: {
     marginBottom: 5,
     fontSize: 12,
+    color: '#B3B3BD',
+    
   },
   boldText: {
     fontWeight: 'bold',
     marginBottom: 10,
+    color:'#FFF'
   },
   innerDivider: {
     marginVertical: 10,
   },
   scoreText: {
+    color: '#FFF',
     fontSize: 24,
     fontWeight: 'bold',
   },
   labelText: {
     fontSize: 14,
-    color: '#666',
+    color: '#B3B3BD',
   },
   card: {
-    margin: 10,
+    backgroundColor:'#2B2B38',
+    flex: 1,
+    marginHorizontal: 5,
+    alignItems: 'center',
+    paddingVertical: 8,
+    marginVertical: 8,
     borderRadius: 8,
+    borderColor: '#2B2B38',
   },
 });
 
