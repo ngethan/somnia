@@ -91,8 +91,8 @@ export function usePopulateSleepData() {
 		}
 		const { data: lastRecord, error } = await supabase
 			.from("sleep_data")
-			.select("endDate")
-			.order("endDate", { ascending: false })
+			.select()
+			.order("date", { ascending: false })
 			.eq("userId", session.user.id)
 			.limit(1);
 
@@ -101,8 +101,8 @@ export function usePopulateSleepData() {
 			return null;
 		}
 
-		const lastDate = lastRecord?.[0]?.endDate
-			? new Date(lastRecord[0].endDate)
+		const lastDate = lastRecord?.[0]?.date
+			? new Date(lastRecord[0].date)
 			: null;
 
 		let conciseData = mergeConsecutiveSleepEntries(data);
