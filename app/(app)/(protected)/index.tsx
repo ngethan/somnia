@@ -180,9 +180,28 @@ export default function Home() {
 				style={styles.card}
 				header={AlarmHeader}
 			>
-				<Text>Open Modal</Text>
-			</Button>
-		</View>
+
+				{/* Time Picker */}
+				<View style={styles.timePickerContainer}>
+					<DateTimePicker
+						value={alarmTime}
+						mode="time"
+						display="default"
+						onChange={onTimeChange}
+						is24Hour={false}
+					/>
+				</View>
+
+				{/* Confirm Alarm Button */}
+				<View style={{ marginTop: 10 }}>
+					<Button onPress={confirmAlarm} style={styles.footerControl}>
+						Confirm Alarm
+					</Button>
+				</View>
+
+				{alarmSet && <Text category="p1" style={styles.alarmSetText}>Alarm set for {alarmTime.toLocaleTimeString()}</Text>}
+			</Card>
+		</Layout>
 	);
 }
 
