@@ -1,7 +1,6 @@
+import { Layout, Text, Button } from "@ui-kitten/components";
 import { useRouter } from "expo-router";
 import React from "react";
-import { Layout, Text, Button, Icon } from "@ui-kitten/components";
-
 import { View } from "react-native";
 
 export default function WelcomeScreen() {
