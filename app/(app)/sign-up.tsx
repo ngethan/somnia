@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, View, Image } from "react-native";
 import * as z from "zod";
 
 import { SafeAreaView } from "@/components/safe-area-view";
@@ -10,8 +10,14 @@ import { Text } from "@/components/ui/text";
 import { H1 } from "@/components/ui/typography";
 import { useSupabase } from "@/context/supabase-provider";
 
+// Import the logo
+const logo = require("../(app)/somnialogo.png"); // Adjust the path accordingly
+
+// Define form validation schema
 const formSchema = z
 	.object({
+		firstName: z.string().min(1, "First name is required."),
+		lastName: z.string().min(1, "Last name is required."),
 		phoneNumber: z.string(),
 		password: z
 			.string()
@@ -43,6 +49,8 @@ export default function SignUp() {
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
+			firstName: "",
+			lastName: "",
 			phoneNumber: "",
 			password: "",
 			confirmPassword: "",
@@ -51,7 +59,12 @@ export default function SignUp() {
 
 	async function onSubmit(data: z.infer<typeof formSchema>) {
 		try {
-			await signUp(data.phoneNumber, data.password);
+			await signUp(
+				data.firstName,
+				data.lastName,
+				data.phoneNumber,
+				data.password,
+			);
 
 			form.reset();
 		} catch (error: Error | any) {
@@ -60,12 +73,45 @@ export default function SignUp() {
 	}
 
 	return (
-		<SafeAreaView className="flex-1 bg-background p-4" edges={["bottom"]}>
-			<View className="flex-1 gap-4 web:m-4">
-				<H1 className="self-start">Sign Up</H1>
+		<SafeAreaView className="flex-1 bg-purple-50 p-4" edges={["bottom"]}>
+			<View className="flex-1 items-center justify-center gap-4 web:m-4">
+				{/* Logo */}
+				{/*<Image source={logo} style={{ width: 150, height: 150 }} />*/}
 
+				{/* Title */}
+				<H1 className="self-center text-purple-700">Create an Account</H1>
+
+				{/* Form */}
 				<Form {...form}>
 					<View className="gap-4">
+						<FormField
+							control={form.control}
+							name="firstName"
+							render={({ field }) => (
+								<FormInput
+									label="First Name"
+									placeholder="First Name"
+									autoCapitalize="words"
+									autoCorrect={false}
+									className="text-purple-700 border-purple-300"
+									{...field}
+								/>
+							)}
+						/>
+						<FormField
+							control={form.control}
+							name="lastName"
+							render={({ field }) => (
+								<FormInput
+									label="Last Name"
+									placeholder="Last Name"
+									autoCapitalize="words"
+									autoCorrect={false}
+									className="text-purple-700 border-purple-300"
+									{...field}
+								/>
+							)}
+						/>
 						<FormField
 							control={form.control}
 							name="phoneNumber"
@@ -77,6 +123,7 @@ export default function SignUp() {
 									autoComplete="tel-national"
 									autoCorrect={false}
 									keyboardType="phone-pad"
+									className="text-purple-700 border-purple-300"
 									{...field}
 								/>
 							)}
@@ -91,6 +138,7 @@ export default function SignUp() {
 									autoCapitalize="none"
 									autoCorrect={false}
 									secureTextEntry
+									className="text-purple-700 border-purple-300"
 									{...field}
 								/>
 							)}
@@ -105,6 +153,7 @@ export default function SignUp() {
 									autoCapitalize="none"
 									autoCorrect={false}
 									secureTextEntry
+									className="text-purple-700 border-purple-300"
 									{...field}
 								/>
 							)}
@@ -112,17 +161,19 @@ export default function SignUp() {
 					</View>
 				</Form>
 			</View>
+
+			{/* Sign-Up Button */}
 			<Button
 				size="default"
 				variant="default"
 				onPress={form.handleSubmit(onSubmit)}
 				disabled={form.formState.isSubmitting}
-				className="web:m-4"
+				className="web:m-4 bg-purple-700"
 			>
 				{form.formState.isSubmitting ? (
-					<ActivityIndicator size="small" />
+					<ActivityIndicator size="small" color="#FFF" />
 				) : (
-					<Text>Sign Up</Text>
+					<Text className="text-white">Sign Up</Text>
 				)}
 			</Button>
 		</SafeAreaView>

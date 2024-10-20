@@ -4,8 +4,8 @@
 			"bundler": "metro",
 			"output": "server"
 		},
-		"name": "ExpoSupabaseStarter",
-		"slug": "ExpoSupabaseStarter",
+		"name": "somnia",
+		"slug": "somnia",
 		"scheme": "expo-supabase-starter",
 		"version": "1.0.0",
 		"orientation": "portrait",

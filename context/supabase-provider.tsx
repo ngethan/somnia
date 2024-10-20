@@ -10,7 +10,12 @@ type SupabaseContextProps = {
 	user: User | null;
 	session: Session | null;
 	initialized?: boolean;
-	signUp: (phoneNumber: string, password: string) => Promise<void>;
+	signUp: (
+		firstName: string,
+		lastName: string,
+		phoneNumber: string,
+		password: string,
+	) => Promise<void>;
 	signInWithPassword: (phoneNumber: string, password: string) => Promise<void>;
 	signOut: () => Promise<void>;
 };
@@ -37,7 +42,12 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
 	const [session, setSession] = useState<Session | null>(null);
 	const [initialized, setInitialized] = useState<boolean>(false);
 
-	const signUp = async (phoneNumber: string, password: string) => {
+	const signUp = async (
+		firstName: string,
+		lastName: string,
+		phoneNumber: string,
+		password: string,
+	) => {
 		console.log("signing up with ", phoneNumber);
 		const { error } = await supabase.auth.signUp({
 			phone: phoneNumber,
@@ -45,6 +55,17 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
 		});
 		if (error) {
 			throw error;
+		}
+		const { error: updateUserError } = await supabase
+			.from("users")
+			.update({
+				firstName,
+				lastName,
+				fullName: `${firstName} ${lastName}`,
+			})
+			.eq("phoneNumber", phoneNumber);
+		if (updateUserError) {
+			throw updateUserError;
 		}
 	};
 
