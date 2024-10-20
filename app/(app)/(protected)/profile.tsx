@@ -14,6 +14,7 @@ import { router } from "expo-router";
 import SleepInfoCard from "@/components/sleepInfoCard";
 import SuggestionCard from "@/components/suggestionCard";
 import SleepCalendar from "@/components/sleepCalendar";
+import { supabase } from "@/config/supabase";
 
 // Define types for the sleep data
 interface SleepQuality {
@@ -21,12 +22,6 @@ interface SleepQuality {
 	bedTime: Date;
 	wakeUpTime: Date;
 }
-
-const sleepQualityData: SleepQuality = {
-	sleepScore: 45,
-	bedTime: new Date(2024, 9, 19, 22, 30),
-	wakeUpTime: new Date(2024, 9, 20, 6, 30),
-};
 
 const Header = ({ greeting }: { greeting: string }): React.ReactElement => (
 	<View style={styles.greetingContainer}>
@@ -69,16 +64,60 @@ const generateWeekDates = (): { date: Date; dayName: string }[] => {
 
 const last7Days = generateWeekDates();
 
+type Selected = {
+	hours: number;
+	quality: number;
+	suggestion: string;
+	bedTime?: Date;
+	wakeUpTime?: Date;
+}
+
 const ProfileScreen: React.FC = () => {
 	const [date, setDate] = useState(new Date());
-	const [selectedStats, setSelectedStats] = useState({
+	const [selectedStats, setSelectedStats] = useState<Selected>({
 		hours: 0,
-		quality: "No Data",
+		quality: 0,
+		suggestion: "",
+		bedTime: undefined,
+		wakeUpTime: undefined,
 	});
 
-	const handleDaySelection = (selectedDate: Date) => {
+	useEffect(() => {
+		const fetchTodayStats = async () => {
+			const { data: sleepData, error: sleepError } = await supabase.from('sleep_data').select().limit(1).eq("date", new Date().toDateString());
+			
+			if (sleepError) console.log(sleepError);
+			else if (sleepData?.[0]) {
+				const len = sleepData?.[0]!.sleepCycle.length;
+				setSelectedStats({
+					hours: Math.round(sleepData?.[0]!.sleepDuration / 60),
+					quality: sleepData?.[0!].sleepQuality,
+					suggestion: sleepData?.[0]!.suggestion,
+					bedTime: len > 0 ? sleepData?.[0]!.sleepCycle?.[0]?.startTime as Date : new Date(),
+					wakeUpTime: len > 0 ? sleepData?.[0]!.sleepCycle?.[len]?.endTime as Date : new Date(),
+				})
+			}
+		}
+		
+		fetchTodayStats();
+	}, [])
+
+	const handleDaySelection = async (selectedDate: Date) => {
 		setDate(selectedDate);
-		setSelectedStats({ hours: 0, quality: "No Data" });
+		setSelectedStats({ hours: 0, quality: 0, suggestion: "None", bedTime: undefined, wakeUpTime: undefined, });
+		
+		const { data: sleepData, error: sleepError } = await supabase.from('sleep_data').select().limit(1).eq("date", new Date().toDateString());
+		if (sleepError) console.log(sleepError);
+		else if (sleepData?.[0]) {
+			const len = sleepData?.[0]!.sleepCycle.length;
+			setSelectedStats({
+				hours: Math.round(sleepData?.[0]!.sleepDuration / 60),
+				quality: sleepData?.[0!].sleepQuality,
+				suggestion: sleepData?.[0]!.suggestion,
+				bedTime: len > 0 ? sleepData?.[0]!.sleepCycle?.[0]?.startTime as Date : new Date(),
+				wakeUpTime: len > 0 ? sleepData?.[0]!.sleepCycle?.[len]?.endTime as Date : new Date(),
+			})
+		}
 	};
 
 	const Footer = (): React.ReactElement => (
@@ -163,9 +202,9 @@ const data = {
 				</Text>
 				<View style={styles.cardsContainer}>
 					<SleepInfoCard
-						sleepScore={sleepQualityData.sleepScore}
-						bedTime={sleepQualityData.bedTime}
-						wakeUpTime={sleepQualityData.wakeUpTime}
+						sleepScore={selectedStats.quality}
+						bedTime={selectedStats.bedTime}
+						wakeUpTime={selectedStats.wakeUpTime}
 					/>
 				</View>
 
@@ -173,7 +212,7 @@ const data = {
 					Sleep Suggestions
 				</Text>
 				<View style={styles.cardsContainer}>
-					<SuggestionCard sleepScore={sleepQualityData.sleepScore} />
+					<SuggestionCard sleepScore={selectedStats.quality} suggestion={selectedStats.suggestion} />
 				</View>
 			</Layout>
 
@@ -267,7 +306,8 @@ const styles = StyleSheet.create({
 		borderColor: "#1C1C28"
 	},
 	selectedDayButton: {
-		fontSize:4,
+		fontWeight:"bold",
+		fontSize: 8,
 		alignItems: "center",
 		borderRadius: 25,
 		width: 40,

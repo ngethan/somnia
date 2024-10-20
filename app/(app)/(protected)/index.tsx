@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback } from "react";
 import useHealthData from "@/hooks/useHealthData";
 import { Button, Card, Layout, Text } from "@ui-kitten/components";
-import { StyleSheet, View, ScrollView } from "react-native";
+import { StyleSheet, View } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useFocusEffect } from "expo-router";
 import { usePopulateSleepData } from "@/lib/database/populateSleepData";
+import { supabase } from "@/config/supabase";
 
 function generateWeekDates(): { date: Date; dayName: string }[] {
 	const today = new Date();
@@ -14,13 +15,7 @@ function generateWeekDates(): { date: Date; dayName: string }[] {
 	lastSunday.setDate(today.getDate() - dayOfWeek);
 
 	const daysOfWeek = [
-		"Sunday",
-		"Monday",
-		"Tuesday",
-		"Wednesday",
-		"Thursday",
-		"Friday",
-		"Saturday",
+		"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",
 	];
 	const dates = [];
 
@@ -36,17 +31,17 @@ function generateWeekDates(): { date: Date; dayName: string }[] {
 	return dates;
 }
 
-const Header = ({ greeting }: { greeting: string }): React.ReactElement => (
+const Header = ({ greeting, timeSlept }: { greeting: string, timeSlept: number }): React.ReactElement => (
 	<LinearGradient
 		colors={["#4B0082", "#4B0082", "#191970"]}
 		style={styles.greetingCard}
 	>
 		<View style={styles.greetingContainer}>
 			<Text category="h1" style={styles.greetingText}>
-				{greeting} 🌙
+				{greeting} {greeting.includes("evening") ? "🌙" : "🌞"}
 			</Text>
 			<Text category="s1" style={styles.subGreetingText}>
-				You have slept 09:30, which is above your recommendation.
+				You have slept {timeSlept} hours, which is {Math.abs(8 - timeSlept) >= 1 ? "optimal!" : timeSlept < 7 ? "below your recommendation" : "above your recommendation"}
 			</Text>
 		</View>
 	</LinearGradient>
@@ -85,6 +80,16 @@ export default function Home() {
 	const [date, setDate] = useState(new Date());
 	const { sleepData } = useHealthData(date);
 	const { populateSleepData } = usePopulateSleepData();
+	const [timeSlept, setTimeSlept] = useState(0);
+
+	useEffect(() => {
+		const getTimeSlept = async () => {
+			const { data: sleepData, error: sleepError } = await supabase.from('sleep_data').select().limit(1).eq("date", new Date().toDateString());
+			if (sleepData?.[0]) setTimeSlept(Math.round((sleepData?.[0].sleepDuration )/ 60))
+		};
+
+		getTimeSlept();
+	}, [])
 
 	const handleDaySelection = (selectedDate: Date) => {
 		setDate(selectedDate);
@@ -141,22 +146,21 @@ export default function Home() {
 		<Layout style={styles.container}>
 			<Card
 				style={styles.card}
-				header={() => <Header greeting={greeting} />}
+				header={() => <Header greeting={greeting} timeSlept={timeSlept} />}
 			>
 				
 			</Card>
 			<Card style={styles.card} header={AlarmHeader}>
-				<View style={styles.timePickerContainer}>
-					{showTimePicker && (
-						<DateTimePicker
-							value={alarmTime}
-							mode="time"
-							display="default"
-							onChange={onTimeChange}
-							is24Hour={false}
-						/>
-					)}
-				</View>
+			<View style={styles.timePickerContainer}>
+    <DateTimePicker
+        value={alarmTime}
+        mode="time"
+        display="spinner"
+        onChange={onTimeChange}
+        is24Hour={false}
+		textColor="#FFF"
+    />
+</View>
 
 				<View style={{ marginTop: 10 }}>
 					<Button onPress={confirmAlarm} style={styles.footerControl}>
@@ -166,8 +170,8 @@ export default function Home() {
 
 				{alarmSet && (
 					<Text category="p1" style={styles.alarmSetText}>
-						Alarm set for {alarmTime.toLocaleTimeString()}
-					</Text>
+					Alarm set for {alarmTime.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
+				  </Text>
 				)}
 			</Card>
 		</Layout>
@@ -242,4 +246,3 @@ const styles = StyleSheet.create({
 	  fontSize: 18, // Slightly larger bold text
 	},
   });
-  

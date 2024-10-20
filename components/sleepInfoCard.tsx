@@ -9,7 +9,7 @@ interface SleepQuality {
   wakeUpTime: Date;
 }
 
-const SleepInfoCard = ({ sleepScore, bedTime, wakeUpTime }: { sleepScore: number, bedTime: Date, wakeUpTime: Date }) => (
+const SleepInfoCard = ({ sleepScore, bedTime, wakeUpTime }: { sleepScore?: number, bedTime?: Date, wakeUpTime?: Date }) => (
   <Card style={styles.card}>
     <View style={styles.cardContent}>
 
@@ -17,7 +17,7 @@ const SleepInfoCard = ({ sleepScore, bedTime, wakeUpTime }: { sleepScore: number
       <AnimatedCircularProgress
         size={120}
         width={12}
-        fill={sleepScore} // Use the sleepScore prop to fill the circle
+        fill={sleepScore ?? 0} // Use the sleepScore prop to fill the circle
         tintColor="#8A2BE2"
         backgroundColor="#F0F0F0"
         duration={800}
@@ -36,12 +36,21 @@ const SleepInfoCard = ({ sleepScore, bedTime, wakeUpTime }: { sleepScore: number
       {/* Sleep Details */}
       <View style={styles.sleepDetails}>
         <Text style={styles.smallHeading}>Time Slept</Text>
-        <Text style={styles.boldText}>{bedTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {wakeUpTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
+        <Text style={styles.boldText}>{bedTime instanceof Date ? bedTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ""} - {wakeUpTime instanceof Date ? wakeUpTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ""}</Text>
 
         <Divider style={styles.innerDivider} />
 
         <Text style={styles.smallHeading}>Quality of Sleep</Text>
-        <Text style={styles.boldText}>Good</Text>
+        <Text style={styles.boldText}>{!sleepScore ? "" : sleepScore < 20
+  ? "Terrible"
+  : sleepScore < 40
+  ? "Bad"
+  : sleepScore < 60
+  ? "Okay"
+  : sleepScore < 80
+  ? "Good"
+  : "Terrific"}
+</Text>
       </View>
 
     </View>

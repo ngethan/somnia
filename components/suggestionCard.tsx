@@ -4,12 +4,13 @@ import { Text, Card } from '@ui-kitten/components';
 
 interface SuggestionCardProps {
   sleepScore: number;
+  suggestion: string;
 }
 
-const SuggestionCard: React.FC<SuggestionCardProps> = ({ sleepScore }) => (
+const SuggestionCard: React.FC<SuggestionCardProps> = ({ sleepScore, suggestion }) => (
   <Card style={styles.suggestionCard}>
     <View>
-      <Text style={styles.boldText}>Your sleep last night was poor</Text>
+      <Text style={styles.boldText}>{suggestion}</Text>
 
       <Text style={styles.smallHeading}>
         Click below to generate a recommendation for how you can improve your sleep
