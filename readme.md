@@ -1,27 +1,26 @@
-# Expo Supabase Starter [![MIT License](https://img.shields.io/github/license/FlemingVincent/expo-supabase-starter)](https://github.com/FlemingVincent/expo-supabase-starter/blob/main/LICENSE)
+# Somnia (Hack WashU 2024)
 
-![social-preview-dark](https://github.com/user-attachments/assets/bcee6db2-6dd0-435f-8255-3f4b36b4cfdc)
+## What is Somnia?
 
-## Introduction
+Somnia turns healthy sleep habits into a fun, competitive experience. Users can track their sleep scores and see how they rank among friends on a leaderboard. This unique keeps users motivated to maintain healthy habits over a long period of time. Beyond individual tracking, Somnia fosters community through friendly competition. This social interaction keeps users invested, making the app not just a sleep tracker but a platform for bonding over wellness. The app provides insights into users’ sleep patterns and their correlation to metrics like resting heart rate. The combination of these metrics into a sleep score helps users understand how small changes in their sleep improve overall health.
 
-This repository serves as a comprehensive starter project for developing React Native and Expo applications with Supabase as the backend. It integrates various technologies such as Expo Router for navigation, Tailwind CSS for styling, React-Hook-Form for form handling, Zod for schema validation, and TypeScript for type safety. By leveraging these powerful tools, this starter template provides a robust foundation for building modern, scalable, and efficient mobile applications.
+## Our Team
 
-#### Disclaimer
+- Aaron Hubhachen
+- Daniel Yoo
+- Ethan Ng
+- Luke Griggs
 
-This is not supposed to be a template, boilerplate or a framework. It is an opinionated guide that shows how to do some things in a certain way. You are not forced to do everything exactly as it is shown here, decide what works best for you and your team and stay consistent with your style.
+## Demo
 
-## Table of Contents
+Checkout our demo video [here](https://youtu.be/qB6SYfkAQzM) and our slides [here](https://docs.google.com/presentation/d/1rLOwCB5I9M5cd7j4Ystd1I80mAyuOf6DNAQqDtP6nss/edit?usp=sharing)!
 
-- [💻 Application Overview](docs/application-overview.md)
-- [⚙️ Project Configuration](docs/project-configuration.md)
-- [🗄️ Project Structure](docs/project-structure.md)
-- [🧱 Components And Styling](docs/components-and-styling.md)
-- [🗃️ State Management](docs/state-management.md)
+## Award
 
-## Contributing
+Awarded 2nd place overall in the master's division.
 
-Contributions to this starter project are highly encouraged and welcome! If you have any suggestions, bug reports, or feature requests, please feel free to create an issue or submit a pull request. Let's work together to enhance the developer experience and make it easier for everyone to build exceptional Expo applications with Supabase.
+## Credits
 
-## License
+Huge thanks to [Hack WashU](https://hackwashu.com) for putting on such a great event! We had a blast coding this out, meeting people, and speaking with the companies that sponsored this event.
 
-This repository is licensed under the MIT License. You are granted the freedom to use, modify, and distribute the code for personal or commercial purposes. For more details, please refer to the [LICENSE](https://github.com/FlemingVincent/supabase-starter/blob/main/LICENSE) file.
+In addition to this, we are extremely grateful for [flemingvincent's Expo Supabase Template](https://github.com/flemingvincent/expo-supabase-starter) that we utilized as well as the [React Native Health library](https://github.com/agencyenterprise/react-native-health) which allowed us to easily interface with Apple Healthkit!
